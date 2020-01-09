@@ -207,15 +207,15 @@ class MaxFlow(Dijkstra):
         self.bottleneck_populated = False
         self.totalflow = 0
         self.totalflow_populated = False
-        self.copied_network = []
 
     def __copy_network(self):
         '''returns a copy of the network in its current state'''
         if not self.network_populated:
             return
+        copied_network = []
         for row in self.network:
-            self.copied_network.append(list(map(lambda x: int(x), row)))
-        print("DEBUG: " + str(self.copied_network))
+            copied_network.append(list(map(lambda x: int(x), row)))
+        return copied_network
         
 
     def find_bottleneck(self):
@@ -232,7 +232,7 @@ class MaxFlow(Dijkstra):
         #  is the bottleneck flow.
         self.bottleneck = infinity
         for i in range(len(self.route) - 1):
-            edge_cost = self.copied_network[ self.route[i] ][ self.route[i + 1] ]
+            edge_cost = self.network[ self.route[i] ][ self.route[i + 1] ]
             if edge_cost < self.bottleneck:
                 self.bottleneck = edge_cost
         print(", with a bottleneck flow of " + str(self.bottleneck))
@@ -248,8 +248,8 @@ class MaxFlow(Dijkstra):
         # Travels through the route, subtracting the bottleneck value in the direction of flow,
         #  and adding it to the opposite direction to allow for imaginary reverse flow.
         for i in range(len(self.route) - 1):
-            self.copied_network[ self.route[i] ][ self.route[i + 1] ] -= self.bottleneck
-            self.copied_network[ self.route[i + 1] ][ self.route[i] ] += self.bottleneck
+            self.network[ self.route[i] ][ self.route[i + 1] ] -= self.bottleneck
+            self.network[ self.route[i + 1] ][ self.route[i] ] += self.bottleneck
         self.totalflow += self.bottleneck
         self.bottleneck_populated = False
         
@@ -264,7 +264,7 @@ class MaxFlow(Dijkstra):
         # 5. repeat until no valid path can be found using Dijkstra
         if not self.network_populated:
             print("ERROR: no network loaded")
-            return
+            return False
 
         # Setup - make sure an initial route is calculated before continuing
         self.bottleneck_populated = False
@@ -274,7 +274,7 @@ class MaxFlow(Dijkstra):
             print("ERROR: no route to the sink can be found, flow is 0")
 
         # Create a copy of the current network
-        original_list = self.__copy_network()
+        copied = self.__copy_network()
 
         # Algorithm will reduce cost of each edge in the route found in each itereration.
         # Will complete when no valid route can be found using "calculate_shortest_path"
@@ -283,7 +283,11 @@ class MaxFlow(Dijkstra):
             self.reduce_weights()
             self.calculate_shortest_path()
         self.totalflow_populated = True
-        self.network_populated = False #network values have been altered, network is no longer valid
+
+        # Re-merge original network
+        self.network = copied
+        return True
+
 
     def return_max_flow(self):
         '''returns the max flow from the source (startnode) to the sink (endnode)'''

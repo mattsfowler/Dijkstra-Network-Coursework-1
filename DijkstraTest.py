@@ -7,21 +7,22 @@ if __name__ == "__main__":
     ExampleNetwork = MaxFlow()
     ExampleNetwork.populate_network("network.txt")
     ExampleNetwork.parse_route("route.txt")
-    ExampleNetwork.calculate_shortest_path()
 
     for row in ExampleNetwork.network:
         for col in row:
             print(str(col) + "|",end="")
         print()
-    print("Finding shortest path between ", end="")
-    print(chr(ExampleNetwork.startnode + 65) + " and ", end="")
-    print(chr(ExampleNetwork.endnode + 65))
-    print("Route Found: " + " > ".join([chr(x + 65) for x in ExampleNetwork.return_shortest_path()]))
 
     print("Finding max flow...")
     ExampleNetwork.calculate_max_flow()
     print("Total flow = " + str(ExampleNetwork.return_max_flow()))
     print()
+
+    print("Finding shortest path between ", end="")
+    print(chr(ExampleNetwork.startnode + 65) + " and ", end="")
+    print(chr(ExampleNetwork.endnode + 65))
+    ExampleNetwork.calculate_shortest_path()
+    print("Route Found: " + " > ".join([chr(x + 65) for x in ExampleNetwork.return_shortest_path()]))
 
 
     print(" ----- TEST REVERSE FLOW NETWORK -----")
