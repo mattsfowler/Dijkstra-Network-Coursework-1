@@ -22,7 +22,7 @@ if __name__ == "__main__":
     print(chr(ExampleNetwork.startnode + 65) + " and ", end="")
     print(chr(ExampleNetwork.endnode + 65))
     ExampleNetwork.calculate_shortest_path()
-    print("Route Found: " + " > ".join([chr(x + 65) for x in ExampleNetwork.return_shortest_path()]))
+    print("Route Found: " + str(ExampleNetwork.return_shortest_path()))
 
 
     print(" ----- TEST REVERSE FLOW NETWORK -----")
@@ -38,8 +38,8 @@ if __name__ == "__main__":
     print("Finding shortest path between ", end="")
     print(chr(RevFlowTest.startnode + 65) + " and ", end="")
     print(chr(RevFlowTest.endnode + 65))
-    print("Route Found: " + " > ".join([chr(x + 65) for x in RevFlowTest.return_shortest_path()]))
-
+    print("Route Found: " + str(RevFlowTest.return_shortest_path()))
+    
     print("Finding max flow...")
     RevFlowTest.calculate_max_flow()
     print("Total flow = " + str(RevFlowTest.return_max_flow()))
@@ -59,8 +59,8 @@ if __name__ == "__main__":
     print("Finding shortest path between ", end="")
     print(chr(SlidesNetwork.startnode + 65) + " and ", end="")
     print(chr(SlidesNetwork.endnode + 65))
-    print("Route Found: " + " > ".join([chr(x + 65) for x in SlidesNetwork.return_shortest_path()]))
-
+    print("Route Found: " + str(SlidesNetwork.return_shortest_path()))
+    
     print("Finding max flow...")
     SlidesNetwork.calculate_max_flow()
     print("Total flow = " + str(SlidesNetwork.return_max_flow()))

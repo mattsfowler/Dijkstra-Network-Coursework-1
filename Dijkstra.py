@@ -1,6 +1,30 @@
+# Author: Matthew Fowler
+# Student ID: 17025958
+# Email: 17025958@students.southwales.ac.uk
+
+# ------  Usage  ------
+# DIJKSTRA:
+#  * instantiate Dijkstra object
+#  * pass network csv via populate_network() method
+#  * pass route .txt file (format A>B) via parse_route()
+#  * run calculate_shortest_path() once
+#  * call return_shortest_path() to get result.
+#    FORMAT: (['C', 'A', ...], 11)
+#
+# MAX FLOW:
+#  * instantiate MaxFlow object
+#  * pass same files as Dijkstra object
+#  * run calculate_max_flow()
+#  * call return_max_flow() to get max flow from source to sink (as single int)
+
+
+
+# DEFINED CONSTANTS
 infinity = 1000000
 invalid_node = -1
 
+
+# struct
 class Node:
     previous = invalid_node
     distfromsource = infinity
@@ -38,31 +62,32 @@ class Dijkstra:
             f = open(filename, "r")
         except FileNotFoundError:
             print("ERROR: file does not exist")
-            return
+            return False
 
         # The int conversion could have been done in the same line as the appending and splitting.
         # I feel that separating the lines is more readable, even if it sacrifices efficiency.
         for line in f.readlines():
             self.network.append(line.split(","))
             try:
-                # Values are strings -> convert to integers
+                # Values are strings --> convert to integers
                 self.network[-1] = [int(col) for col in self.network[-1]]
             except ValueError:
                 print("ERROR: non-number found in the matrix")
                 f.close()
-                return
-        f.close() # We've read everything now, no need to keep it open
+                return False
+        f.close() # Everything is read now, no need to keep file open
 
         # Validate the given file
         height = len(self.network)
         for row in self.network:
             if len(row) != height:
                 print("ERROR: matrix width does not match matrix height")
-                return
+                return False
 
         # Indicate to any methods that need access to the network that the network has been
         #  successfully loaded.
         self.network_populated = True
+        return True
 
     def populate_node_table(self):
         '''populate node table'''
@@ -81,6 +106,10 @@ class Dijkstra:
 
     def parse_route(self, filename):
         '''load in route file'''
+        if not self.network_populated:
+            print("ERROR: no network loaded")
+            return False
+
         # Read from the given file and normalise the input
         # Try to open the file and read it's contents
         f = None
@@ -88,7 +117,7 @@ class Dijkstra:
             f = open(filename, "r")
         except FileNotFoundError:
             print("ERROR: file does not exist")
-            return []
+            return False
 
         line = f.read()
         f.close()
@@ -97,11 +126,30 @@ class Dijkstra:
         line = "".join(line.split(" "))
         line = line.split(">")
 
+        # File validation. The following checks that:
+        #  a. there is exactly one '>' character in the file
         if len(line) != 2:
             print("ERROR: file must contain exactly 1 '>' seperator")
-        else:
-            self.startnode = ord(line[0]) - 65
-            self.endnode = ord(line[1]) - 65
+            return False
+
+        #  b. exactly one character appears before and after '>'
+        if len(line[0]) != 1 or len(line[1]) != 1:
+            print("ERROR: exactly one character must appear before and after '>'")
+            return False
+        
+        self.startnode = ord(line[0]) - 65
+        self.endnode = ord(line[1]) - 65
+
+        #  c. the characters are letters represent valid nodes on the graph
+        if (self.startnode < 0 or self.startnode >= len(self.network)
+        or  self.endnode < 0 or self.endnode >= len(self.network)):
+            print("ERROR: given node(s) not in graph")
+            self.startnode = 0
+            self.endnode = 0
+            return False
+
+        # none of the checks failed: successfull execution
+        return True
             
         
     def return_near_neighbour(self):
@@ -160,6 +208,10 @@ class Dijkstra:
         if not self.network_populated:
             print("ERROR: no network loaded")
             return
+
+        if self.startnode == self.endnode:
+            print("ERORR: start and end node cannot be the same")
+            return
         
         self.route = []
         self.populate_node_table()
@@ -192,9 +244,11 @@ class Dijkstra:
         '''return shortest path as list (start->end), and total distance'''
         if not self.route_populated:
             print("ERROR: no path calculated / loaded")
-            return []
+            return ([], 0)
         else:
-            return self.route
+            route_output = list(map(lambda x: chr(65 + x), self.route))
+            route_length = self.nodetable[self.endnode].distfromsource
+            return (route_output, route_length)
 
 
 class MaxFlow(Dijkstra): 
@@ -296,4 +350,24 @@ class MaxFlow(Dijkstra):
             return 0
         else:
             return self.totalflow
+
+
+if __name__ == "__main__":
+    print("Example execution: attempting to use 'network.txt' and 'route.txt'")
+    print()
+
+    print("DIJKSTRA:")
+    ExampleDijkstra = Dijkstra()
+    if (ExampleDijkstra.populate_network("network.txt")):
+        if (ExampleDijkstra.parse_route("route.txt")):
+            ExampleDijkstra.calculate_shortest_path()
+            print("Shortest Path: " + str(ExampleDijkstra.return_shortest_path()))
+            print()
+
+    print("MAX FLOW:")
+    ExampleMaxFlow = MaxFlow()
+    if (ExampleMaxFlow.populate_network("network.txt")):
+        if (ExampleMaxFlow.parse_route("route.txt")):
+            ExampleMaxFlow.calculate_max_flow()
+            print("Max Flow: " + str(ExampleMaxFlow.return_max_flow()))
 
